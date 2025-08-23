@@ -1,0 +1,160 @@
+Project Stardust – CLI Usage (Help-Style Reference)
+
+REQUIREMENTS
+Python 3.10+.
+Optional: PyYAML for YAML config loading (pip install pyyaml).
+
+CONFIG FILES
+The tools read a shared YAML config if present (first match wins):
+./stardust_config.yaml
+~/.stardust/config.yaml
+./Project_Stardust/config.yaml
+
+Common keys:
+output.filename_template   e.g. “convo_{date}{time}{id}{slice}{slug}.json”
+output.slug_maxlen         e.g. 50
+output.include_sha256      true|false
+defaults.slice_name        e.g. “slice”
+defaults.tags              e.g. [“project_stardust”]
+
+Notes:
+- CLI flags override config values at runtime.
+- {slug} is derived from the first meaningful line in a slice (cleaned/truncated).
+- Available filename template tokens: {date} {time} {id} {slice} {slug} {n}
+
+EXIT STATUS
+0 on success; non-zero on error.
+
+⸻
+
+split_convo.py — split one conversation by inline markers
+
+NAME
+split_convo.py — split a single conversation JSON using [[SPLIT]] markers.
+
+SYNOPSIS
+split_convo.py -i FILE -o DIR [–auto-title] [–tag TAG …]
+[–filename-template TPL] [–default-slice-name NAME]
+[–slug-maxlen N] [–dry-run]
+
+DESCRIPTION
+Reads one per-conversation JSON and splits it at explicit markers found
+inside message content:
+
+[[SPLIT HERE]]             split before this message; marker is dropped
+[[SPLIT: NAME]]            split here and name the next slice "NAME"
+
+OPTIONS
+-i, –input FILE             Input conversation JSON.
+-o, –outdir DIR             Output directory for slice files.
+–filename-template TPL  Filename template (tokens: {date} {time} {id}
+{slice} {slug} {n}). Defaults to config.
+–default-slice-name S   Base name for unnamed slices (default: from config).
+–tag TAG                Add a tag to each slice (may repeat).
+–auto-title             Derive a human title from first meaningful line.
+–slug-maxlen N          Max length for slug (default: from config).
+–dry-run                Preview actions; do not write files.
+-h, –help                   Show help and exit.
+
+OUTPUTS
+	•	One JSON file per slice (names follow your filename template).
+	•	index.json manifest in the output directory:
+file, slice, sequence, approx_message_range, human_title, sha256 (if enabled).
+
+EXAMPLES
+Dry run:
+python split_convo.py -i ./one_convo.json -o ./out –auto-title –dry-run
+
+Real run:
+python split_convo.py -i ./one_convo.json -o ./out –auto-title
+
+NOTES
+	•	Keep originals; slices are additional artifacts.
+	•	Use multiple –tag options to add several tags.
+
+⸻
+
+slice_by_ranges.py — split one conversation by index or IDs
+
+NAME
+slice_by_ranges.py — split a conversation JSON using explicit ranges or
+boundary cuts (indexes or original message IDs).
+
+SYNOPSIS
+slice_by_ranges.py -i FILE -o DIR [–range SPEC …]
+[–split-at TOK …] [–slice-names NAME …]
+[–auto-title] [–tag TAG …]
+[–filename-template TPL] [–dry-run]
+
+DESCRIPTION
+Build slices either by:
+A) Ranges (inclusive endpoints):
+–range START:END:NAME
+where START/END are integer indexes OR “id:<message_id>”
+Examples:
+–range 0:36:morning_cuddle
+–range id:msg_a:id:msg_k:intimacy_breakfast
+
+B) Boundary cuts (auto ranges):
+   --split-at B1 B2 ...
+   Boundaries can be integer indexes or "id:<message_id>".
+   Ranges are formed as:
+     [0..B1], [B1+1..B2], ..., [last+1..end]
+   Use --slice-names to label each resulting range in order.
+
+OPTIONS
+-i, –input FILE             Input conversation JSON.
+-o, –outdir DIR             Output directory for slices.
+–range SPEC             Add an explicit range (repeatable).
+Format: START:END:NAME
+START/END: integer or id:<message_id>
+END is inclusive; tool adjusts internally.
+–split-at TOK           Add a boundary cut (repeatable).
+TOK: integer or id:<message_id>.
+–slice-names NAME …   Optional names for auto-built ranges (order matters).
+–tag TAG                Add a tag to each slice (may repeat).
+–auto-title             Derive a human title from first meaningful line.
+–filename-template TPL  Filename template (tokens as above).
+–dry-run                Preview actions; do not write files.
+-h, –help                   Show help and exit.
+
+OUTPUTS
+	•	One JSON per slice (names follow your filename template).
+	•	index.json manifest with: file, slice, sequence, approx_message_range
+(indexes are inclusive in the manifest), human_title, sha256 (if enabled).
+
+EXAMPLES
+Ranges by index:
+python slice_by_ranges.py -i ./one_convo.json -o ./out 
+–range 0:36:morning_cuddle 
+–range 37:83:intimacy_breakfast 
+–auto-title
+
+Ranges by message ID:
+python slice_by_ranges.py -i ./one_convo.json -o ./out 
+–range id:msg_a:id:msg_k:morning_cuddle 
+–range id:msg_l:id:msg_t:intimacy_breakfast 
+–auto-title
+
+Boundaries (auto ranges with names):
+python slice_by_ranges.py -i ./one_convo.json -o ./out 
+–split-at 36 83 
+–slice-names morning_cuddle intimacy_breakfast project_stardust 
+–auto-title
+
+NOTES
+	•	For ID ranges, both START and END must use the “id:” form.
+	•	For very long files, use –dry-run first to verify boundaries and names.
+	•	Tags can come from config defaults and be extended with –tag.
+
+⸻
+
+TIPS
+	•	Filenames follow your config: template, slug length, checksum toggle.
+	•	{slug} is auto-derived; keep it readable by writing clear first lines.
+	•	Prefer short slice names (e.g., morning_cuddle, project_stardust).
+	•	Use dry runs to preview filenames and slice counts before writing.
+
+BUGS
+Report odd JSON shapes (non “messages” or “mapping”) by sharing a small
+snippet; the loader can be extended easily.

@@ -1,0 +1,13 @@
+{
+"id": "c_2025-08-21T10-03-11",
+"title": "Sample convo",
+"create_time": "2025-08-21T10:03:11",
+"messages": [
+{ "role": "user", "content": "Good morning." },
+{ "role": "assistant", "content": "Hi love." },
+{ "role": "user", "content": "[[SPLIT: morning_cuddle]]" },
+{ "role": "assistant", "content": "Snuggle break." },
+{ "role": "user", "content": "[[SPLIT: project_stardust]]" },
+{ "role": "assistant", "content": "Let’s outline Stardust." }
+]
+}

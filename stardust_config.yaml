@@ -1,0 +1,29 @@
+# Project Stardust — shared config for CLI tools and future Qt GUI
+# Checked in this order:
+#   1) ./stardust_config.yaml  (current working directory)
+#   2) ~/.stardust/config.yaml
+#   3) ./Project_Stardust/config.yaml
+#
+# CLI flags always override these defaults at runtime.
+
+output:
+  # Filename template tokens you can use:
+  #   {date} {time} {id} {slice} {slug} {n}
+  filename_template: "convo_{date}_{time}_{id}_{slice}_{slug}.json"
+
+  # Max length for the slugified human title fragment
+  slug_maxlen: 50
+
+  # Sort mode for aggregated exports (when applicable): chronological | selection
+  sort_mode: "chronological"
+
+  # Include sha256 checksums in manifests
+  include_sha256: true
+
+defaults:
+  # Default slice name when not provided
+  slice_name: "slice"
+
+  # Tags automatically added to each slice/export
+  tags:
+    - project_stardust
