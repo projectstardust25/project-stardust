@@ -1,5 +1,8 @@
 A robust Python script that pulls a single conversation out of a massive ChatGPT-style JSON export and writes it to a fully closed, valid JSON file (not a human-readable text dump).
 
+By: Nova
+
+
 What it handles:
 	•	Exports shaped like:
 	•	{"conversations": [ ... ]} (common)
@@ -19,18 +22,19 @@ Filters you can use:
 Usage examples:
 
 # 1) Pull the beach birthday thread by title substring
-python extract_conversation.py export.json --by-title "beach birthday" -o beach_birthday.json
+python3 extract_conversation.py export.json --by-title "beach birthday" -o beach_birthday.json
 
 # 2) Extract by exact conversation id
-python extract_conversation.py export.json --by-id 9f2f3f2e-... -o convo_9f2f.json
+python3 extract_conversation.py export.json --by-id 9f2f3f2e-... -o convo_9f2f.json
 
 # 3) Find a thread by a phrase inside the messages (substring or regex)
-python extract_conversation.py export.json --by-snippet "sacred vibrator" -o relic_scene.json
+python3 extract_conversation.py export.json --by-snippet "sacred vibrator" -o relic_scene.json
 
 # 4) Combine filters and pick the first match
-python extract_conversation.py export.json --by-title "massage" --after 2025-08-01 --index 0 -o massage_aug.json
+python3 extract_conversation.py export.json --by-title "massage" --after 2025-08-01 --index 0 -o massage_aug.json
 
 What it outputs:
 	•	A single conversation object, preserving the original structure, written as pretty JSON:
 	•	No truncation
 	•	No reformatting into “human readable” text
+
